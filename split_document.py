@@ -25,9 +25,9 @@ def main():
 
     # print("number of blocks: ", num_of_blocks)
 
-    es_host = "https://crawler-test.es.europe-west1.gcp.cloud.es.io:9243"
+    es_host = "http://localhost:9200"
     es_user = "elastic"
-    es_password = "uCWpyE5ywNZ6tJAAA8PS1qHt"
+    es_password = "password"
     es_timeout = 120
     es_chunk_size = 100
     bulk_ingest = False
