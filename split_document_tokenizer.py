@@ -28,7 +28,7 @@ def main():
     # Connects to ES and dump the content of the index and split textfield (doc['_source']['body_content'])
     # into sliding windows.
     # Save the content (new documents) into the file `doc_file`
-    # Works with index from ES webcrawler
+    # Works with index from ES webcrawler in ESS
     create_sliding_windows()
 
     # Indexes output (json file) from the above step into the ES
@@ -41,6 +41,15 @@ def gen_rows(df):
         yield doc
 
 
+# We take the document's text field we want to split into multiple.
+# Split the text into sentences using sentence tokenizer
+# Take sentence and split into tokens using tokenizer. Count number of tokens in the sentence.
+# if number of tokens is less than 512, save sentence into buffer, and take the next sentence.
+# Count the number of tokens together with number of tokens from previous sentences and if less than 512, continue with
+# the next sentence.
+# If the number of sentences is >= 512, save the document with the previous sentence's buffer. Discard current sentence.
+# Take the last saved sentence from previous window and start from there for the new window.
+# With the approach we cerate ovelapping text windws with one sentence.
 def create_sliding_windows():
     es = Elasticsearch(hosts=[es_host], basic_auth=(es_user, es_password),
                        verify_certs=True, request_timeout=es_timeout)
@@ -54,6 +63,7 @@ def create_sliding_windows():
 
     count = 0
     with open(doc_file, "wt", encoding="UTF-8") as f:
+        # for each original document
         for doc in docs:
             if count % es_chunk_size == 0:
                 print(".", flush=True, end="")
@@ -61,6 +71,7 @@ def create_sliding_windows():
                 json.dump({"index": {"_index": doc["_index"]}}, f)
                 f.write("\n")
 
+            # Split text from the document into sentences
             sentences = nltk.tokenize.sent_tokenize(doc['_source']['body_content'])
             print('')
             print('Number of sentences: {}'.format(len(sentences)))
@@ -138,8 +149,8 @@ def index_blogs_windows():
 
         if not es.indices.exists(index=blogs_windows_index):
             print("Creating index %s" % blogs_windows_index)
-            es.indices.create(index=blogs_windows_index, mappings=config_blg["mappings"], settings=config_blg["settings"],
-                      ignore=[400, 404])
+            es.indices.create(index=blogs_windows_index, mappings=config_blg["mappings"],
+                              settings=config_blg["settings"], ignore=[400, 404])
         else:
             print("Index " + "blogs_windows_index" + " already exists. Is that OK? Check. I'll index anyways into that index.")
 
