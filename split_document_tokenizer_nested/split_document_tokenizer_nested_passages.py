@@ -31,7 +31,7 @@ def main():
     create_sliding_windows()
 
     # Indexes output (json file) from the above step into the ES
-    # index_blogs_windows()
+    index_blogs_windows()
 
 
 def gen_rows(df):
@@ -51,9 +51,9 @@ def gen_rows(df):
 # Take the last saved sentence from previous window and start from there for the new window.
 # With the approach we cerate ovelapping text windws with one sentence.
 def create_sliding_windows():
-    es = Elasticsearch(hosts=[es_host])
-    # es = Elasticsearch(hosts=[es_host], basic_auth=(es_user, es_password),
-    #                    verify_certs=True, request_timeout=es_timeout)
+    # es = Elasticsearch(hosts=[es_host])
+    es = Elasticsearch(hosts=[es_host], basic_auth=(es_user, es_password),
+                       verify_certs=True, request_timeout=es_timeout)
 
 
     with open(source_doc_file) as f_source:
